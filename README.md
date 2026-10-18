@@ -1,4 +1,5 @@
 # AutoPot
+<img src="https://github.com/Oriprogram/AutoPot/blob/main/Images/Menacing_stare.jpeg"/>
 
 ## What is this?
 
@@ -24,3 +25,11 @@ I always wanted to get a desktop plant, but my forgetfulness would get in my way
 ## Extra
 
 I used Tinkercad for my 3D modelling. I am a noob at this stuff so I started with the basics. The basics did suffice. And for the code I used the Arduino IDE. At first trying to code and do the circuitry was difficult, but I was able to persevere. It was mostly because of the coding. I had known how to code but that skill was dormant for so long that I literally forgot. Similarly, my electronics skill had gotten worse. Fortunately, through this experience I was able to get them back to form.
+
+---
+
+## 3D model work
+
+<img src="https://github.com/Oriprogram/AutoPot/blob/main/Images/CAD_view.png"/>
+<img src="https://github.com/Oriprogram/AutoPot/blob/main/Images/CAD_handle.png"/>
+
