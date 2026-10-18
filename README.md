@@ -32,4 +32,6 @@ I used Tinkercad for my 3D modelling. I am a noob at this stuff so I started wit
 
 <img src="https://github.com/Oriprogram/AutoPot/blob/main/Images/CAD_view.png"/>
 <img src="https://github.com/Oriprogram/AutoPot/blob/main/Images/CAD_handle.png"/>
+<img src="https://github.com/Oriprogram/AutoPot/blob/main/Images/CAD_handle.png"/>
+<img src="https://github.com/Oriprogram/AutoPot/blob/main/Images/CAD_handle.png"/>
 
