@@ -56,6 +56,18 @@ Wire Jumpscare:
 
 ---
 
+## Website
+
+I made the website pretty easily. I mean I didn't code it. I prompted. It took a couple of versions until I landed with one that I did kinda like. It is very bare bones which I thought would be important.
+
+<img src="https://github.com/Oriprogram/AutoPot/blob/main/Images/Website.png"/>
+
+## Google Firebase
+
+I used Google Firebase Realtime Database to connect the pot to the web app. Every few seconds, the ESP32 sends soil moisture, sunlight levels, and the plant's mood to Firebase over HTTPS, which updates the phone app in real time. It also works in reverse. When you tap a button on your phone to turn on the grow light or trigger the water pump, Firebase sends that command down to the ESP32 so it can switch the relays. Google Auth is also used so each pot stays linked to its owner.
+
+---
+
 ## BOM
 
 | Part                                          | Purpose              | Cost   | Quantity     | Total Cost  | Link                                                                |
@@ -77,3 +89,10 @@ Wire Jumpscare:
 | Custom 3D Printing Service (Chassis & Drawer) | 3D print             | $28.00 | 1            | $28.00      | [Lalafo](https://lalafo.kg/)                                        |
 | **TOTAL**                                     |                      |        |              | **$47.275** |                                                                     |
 
+---
+
+## End
+
+So this is the end of my project. It was my first time actually trying to finish a project from start to finish. And it was also my first time doing a project individually. It was really fun and I kinda liked it. Hopefully, after my university application stuff ends and I get into a university, I can start another solo project. Until then, I am happy I got to be able to participate in Stardance. I really appreciate it. And this means a lot to me. I have finally finished the project.
+
+Thanks <3
