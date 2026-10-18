@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dashboard</title>
+
+  <!-- PWA & Favicon Metadata -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              black: '#000000',
+              card: '#111111',
+              inner: '#171717',
+              border: '#242424',
+              hover: '#1f1f1f',
+              blue: '#2563eb',
+              yellow: '#eab308',
+              red: '#dc2626',
+              teal: '#0d9488'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+            mono: ['SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #000000;
+      color: #f3f4f6;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Precision Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #242424;
+      height: 5px;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 4px;
+      background: #2563eb;
+      border: 1px solid #ffffff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-app-black text-slate-100 flex flex-col justify-between">
+
+  <!-- ============================================================ -->
+  <!-- 1. AUTHENTICATION VIEW -->
+  <!-- ============================================================ -->
+  <div id="authSection" class="w-full min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-app-card border border-app-border p-6 rounded-xl space-y-5 text-center">
+      <div class="space-y-1">
+        <h1 class="text-xl font-bold tracking-tight text-white">AutoPot</h1>
+        <p class="text-xs text-slate-400" data-i18n="signInPrompt">Sign in to access your pot telemetry</p>
+      </div>
+
+      <button onclick="loginWithGoogle()" class="w-full bg-white hover:bg-slate-200 text-black font-semibold py-2.5 px-4 rounded-lg transition flex items-center justify-center space-x-2 text-xs">
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span data-i18n="continueGoogle">Continue with Google</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 2. PAIRING VIEW -->
+  <!-- ============================================================ -->
+  <div id="pairSection" class="w-full min-h-screen flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-sm bg-app-card border border-app-border p-6 rounded-xl space-y-4 text-center">
+      <div class="w-12 h-12 bg-app-inner rounded-lg mx-auto flex items-center justify-center border border-app-border">
+        <svg class="w-6 h-6 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M10 10l4 4m0-4l-4 4"/>
+        </svg>
+      </div>
+
+      <div class="space-y-1">
+        <h2 class="text-lg font-bold text-white" data-i18n="connectTitle">Connect Device</h2>
+        <p class="text-xs text-slate-400" data-i18n="connectPrompt">Enter the identifier from your pot display</p>
+      </div>
+
+      <input id="pairingInput" type="text" placeholder="POT-001" maxlength="10" class="w-full bg-app-inner border border-app-border rounded-lg py-2.5 px-3 text-center text-lg font-mono font-bold tracking-widest uppercase text-white focus:outline-none focus:border-app-blue transition">
+
+      <button id="pairBtn" onclick="pairDevice()" class="w-full bg-app-blue hover:bg-blue-600 text-white font-medium py-2.5 rounded-lg transition text-xs" data-i18n="connectBtn">
+        Connect
+      </button>
+
+      <div>
+        <button onclick="logoutUser()" class="text-xs text-slate-500 hover:text-white transition" data-i18n="signOut">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 3. MAIN DASHBOARD (MOBILE & DESKTOP RESPONSIVE) -->
+  <!-- ============================================================ -->
+  <div id="dashboardSection" class="w-full max-w-6xl mx-auto p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 hidden">
+
+    <!-- TOP HEADER BAR -->
+    <header class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-app-border gap-3 sm:gap-4">
+      
+      <!-- User Profile & Device ID -->
+      <div class="flex items-center space-x-3">
+        <img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23171717'/%3E%3Ctext x='50%25' y='50%25' fill='%23888' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14'%3EAP%3C/text%3E%3C/svg%3E" alt="Avatar" class="w-10 h-10 rounded-lg object-cover border border-app-border shrink-0">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-base font-bold text-white tracking-tight">AutoPot</span>
+            <span id="activePotBadge" class="font-mono text-[11px] text-app-blue bg-app-inner px-2 py-0.5 rounded border border-app-border font-semibold">POT-001</span>
+          </div>
+          <div class="text-xs text-slate-400">
+            <span data-i18n="signedInAs">Signed in as</span> <span id="userName" class="text-slate-200 font-medium">User</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Header Tools: Language Switcher, Time/Weather Widget, Actions -->
+      <div class="flex items-center space-x-2 sm:space-x-3 self-end sm:self-auto">
+        
+        <!-- Language Switcher Segmented Control -->
+        <div class="bg-app-card border border-app-border p-0.5 rounded-lg flex items-center space-x-0.5 text-[10px] font-mono">
+          <button onclick="setLanguage('en')" id="langBtn-en" class="px-2 py-1 rounded bg-app-blue text-white font-bold transition">EN</button>
+          <button onclick="setLanguage('ru')" id="langBtn-ru" class="px-2 py-1 rounded text-slate-400 hover:text-white transition">РУС</button>
+          <button onclick="setLanguage('ky')" id="langBtn-ky" class="px-2 py-1 rounded text-slate-400 hover:text-white transition">КЫР</button>
+        </div>
+
+        <!-- Time, Date, and Temperature Widget -->
+        <div class="flex items-center space-x-2.5 pl-2 border-l border-app-border">
+          <div class="text-right">
+            <div id="liveClock" class="text-xs sm:text-sm font-bold text-white font-mono tracking-tight leading-none">15:50</div>
+            <div id="liveDate" class="text-[9px] sm:text-[10px] text-slate-400 mt-0.5">Saturday, Oct 26</div>
+          </div>
+          <div class="bg-app-card border border-app-border px-2 py-1 rounded-lg flex items-center space-x-1.5 text-xs text-slate-200">
+            <svg class="w-3.5 h-3.5 text-app-yellow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"/>
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <span class="font-mono text-xs">+21°C</span>
+          </div>
+        </div>
+        
+        <!-- Header Actions -->
+        <div class="flex items-center space-x-1 pl-1.5 sm:pl-2 border-l border-app-border">
+          <button onclick="promptPairing()" title="Switch Pot" class="p-2 bg-app-card hover:bg-app-hover border border-app-border rounded-lg text-slate-300 hover:text-white transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+          </button>
+          <button onclick="logoutUser()" title="Sign Out" class="p-2 bg-app-card hover:bg-app-hover border border-app-border rounded-lg text-slate-300 hover:text-app-red transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- UPPER SECTION: STATS & PROFILES -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5">
+
+      <!-- Left Column: Stats Console (md: 7 cols) -->
+      <div class="md:col-span-7 bg-app-card border border-app-border rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4 sm:space-y-5">
+        
+        <!-- Top Status Bar -->
+        <div class="flex items-center justify-between pb-3 border-b border-app-border">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-app-teal animate-pulse"></span>
+            <span class="text-xs font-semibold text-slate-200 uppercase tracking-wider" data-i18n="statsTitle">Stats</span>
+          </div>
+          <span id="telemetryStatusBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-app-inner border border-app-border text-app-teal">OPTIMAL</span>
+        </div>
+
+        <!-- Dual Channel Metric Monitors -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          
+          <!-- Channel 1: Soil Moisture -->
+          <div class="bg-app-inner border border-app-border p-3.5 sm:p-4 rounded-lg space-y-2.5 sm:space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-400 font-medium" data-i18n="soilMoisture">Soil Moisture</span>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-app-card border border-app-border text-app-blue">CH-1</span>
+            </div>
+            <div class="flex items-baseline space-x-1.5">
+              <span id="channelMoistVal" class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight">--</span>
+              <span class="text-xs font-mono text-slate-400">%</span>
+            </div>
+            <!-- Calibrated Progress Bar -->
+            <div class="space-y-1">
+              <div class="w-full bg-app-card h-2 rounded overflow-hidden border border-app-border relative">
+                <div id="channelMoistBar" class="bg-app-blue h-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] font-mono text-slate-500">
+                <span>0%</span>
+                <span id="targetMoistTag" class="text-slate-400">Target: 45%</span>
+                <span>100%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Channel 2: Ambient Light -->
+          <div class="bg-app-inner border border-app-border p-3.5 sm:p-4 rounded-lg space-y-2.5 sm:space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-400 font-medium" data-i18n="ambientLight">Ambient Light</span>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-app-card border border-app-border text-app-yellow">CH-2</span>
+            </div>
+            <div class="flex items-baseline space-x-1.5">
+              <span id="channelLightVal" class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight">--</span>
+              <span class="text-xs font-mono text-slate-400">lux</span>
+            </div>
+            <!-- Calibrated Progress Bar -->
+            <div class="space-y-1">
+              <div class="w-full bg-app-card h-2 rounded overflow-hidden border border-app-border relative">
+                <div id="channelLightBar" class="bg-app-yellow h-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] font-mono text-slate-500">
+                <span>0</span>
+                <span id="targetLightTag" class="text-slate-400">Target: 10h</span>
+                <span>1000+</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Integrated Live Status Ribbon -->
+        <div class="pt-2.5 border-t border-app-border flex items-center justify-between text-[11px] font-mono text-slate-400">
+          <div class="flex items-center space-x-1.5">
+            <span class="text-slate-500" data-i18n="syncLabel">Sync:</span>
+            <span class="text-slate-200">Realtime</span>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <span class="text-slate-500">Hardware:</span>
+            <span class="text-slate-200">Online</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Profiles & Custom Targets (md: 5 cols) -->
+      <div class="md:col-span-5 bg-app-card border border-app-border rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider" data-i18n="profilesTitle">Profiles</span>
+            <span id="activePresetBadge" class="text-[10px] font-mono font-bold text-white bg-app-inner px-2 py-0.5 rounded border border-app-border">SUCCULENT</span>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="setSpeciesPreset('SUCCULENT', 20, 8)" id="pill-SUCCULENT" class="p-2 rounded-lg bg-app-blue text-white text-xs font-medium transition text-center" data-i18n="succulent">Succulent</button>
+            <button onclick="setSpeciesPreset('CACTUS', 15, 10)" id="pill-CACTUS" class="p-2 rounded-lg bg-app-inner hover:bg-app-hover border border-app-border text-slate-300 text-xs font-medium transition text-center" data-i18n="cactus">Cactus</button>
+            <button onclick="setSpeciesPreset('TROPICAL', 55, 10)" id="pill-TROPICAL" class="p-2 rounded-lg bg-app-inner hover:bg-app-hover border border-app-border text-slate-300 text-xs font-medium transition text-center" data-i18n="tropical">Tropical</button>
+            <button onclick="setSpeciesPreset('BONSAI', 45, 8)" id="pill-BONSAI" class="p-2 rounded-lg bg-app-inner hover:bg-app-hover border border-app-border text-slate-300 text-xs font-medium transition text-center" data-i18n="bonsai">Bonsai</button>
+            <button onclick="setSpeciesPreset('HERB', 65, 14)" id="pill-HERB" class="p-2 rounded-lg bg-app-inner hover:bg-app-hover border border-app-border text-slate-300 text-xs font-medium transition text-center" data-i18n="herb">Herb</button>
+            <button onclick="setSpeciesPreset('ROSE', 60, 12)" id="pill-ROSE" class="p-2 rounded-lg bg-app-inner hover:bg-app-hover border border-app-border text-slate-300 text-xs font-medium transition text-center" data-i18n="rose">Rose</button>
+          </div>
+        </div>
+
+        <!-- Precision Setpoint Sliders -->
+        <div class="space-y-3 pt-3 border-t border-app-border">
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400" data-i18n="targetMoisture">Target Moisture</span>
+              <span id="sliderMoistValDisplay" class="font-mono font-bold text-app-blue">45%</span>
+            </div>
+            <input type="range" id="customMoistSlider" min="10" max="90" value="45" oninput="onMoistSliderMove(this.value)" onchange="commitMoistSlider(this.value)" class="w-full">
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400" data-i18n="targetLight">Target Daily Light</span>
+              <span id="sliderLightValDisplay" class="font-mono font-bold text-app-yellow">10 hrs</span>
+            </div>
+            <input type="range" id="customLightSlider" min="0" max="24" value="10" oninput="onLightSliderMove(this.value)" onchange="commitLightSlider(this.value)" class="w-full">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LOWER SECTION: CONTROLS & HARDWARE RELAYS -->
+    <div class="space-y-2.5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" data-i18n="controlsTitle">Controls</span>
+        <span id="modeStatusText" class="text-xs text-slate-400" data-i18n="autoModeActive">Auto mode active</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+        <!-- 1. Auto vs Manual Toggle -->
+        <div class="bg-app-card border border-app-border p-3.5 rounded-xl flex items-center justify-between">
+          <div class="space-y-0.5">
+            <div class="text-xs font-bold text-white" data-i18n="modeLabel">Mode</div>
+            <div id="modeDescription" class="text-[11px] text-slate-400" data-i18n="autoDesc">Auto watering active</div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span id="autoIndicator" class="text-[11px] font-mono text-app-blue font-bold">AUTO</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="manualModeToggle" onchange="toggleManualMode(this.checked)" class="sr-only peer">
+              <div class="w-10 h-5 bg-app-inner border border-app-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-app-yellow"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 2. Grow Light Button (Strictly locked in Auto Mode) -->
+        <div id="lightControlBox" class="bg-app-card border border-app-border p-3.5 rounded-xl flex items-center justify-between opacity-35 pointer-events-none transition">
+          <div class="space-y-0.5">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-xs font-bold text-white" data-i18n="growLight">Grow Light</span>
+              <span id="lightLockTag" class="text-[9px] font-mono bg-app-inner px-1.5 py-0.2 rounded border border-app-border text-slate-400" data-i18n="lockedTag">LOCKED</span>
+            </div>
+            <div id="lightStateText" class="text-[11px] font-mono text-slate-400">OFF</div>
+          </div>
+
+          <button id="growLightBtn" onclick="toggleGrowLight()" class="px-3 py-1.5 rounded-lg bg-app-inner border border-app-border text-xs font-semibold text-slate-300 hover:text-white transition" data-i18n="toggleBtn">
+            Toggle
+          </button>
+        </div>
+
+        <!-- 3. Water Pump Button (Strictly locked in Auto Mode) -->
+        <div id="pumpControlBox" class="bg-app-card border border-app-border p-3.5 rounded-xl flex items-center justify-between opacity-35 pointer-events-none transition">
+          <div class="space-y-0.5">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-xs font-bold text-white" data-i18n="waterPump">Water Pump</span>
+              <span id="pumpLockTag" class="text-[9px] font-mono bg-app-inner px-1.5 py-0.2 rounded border border-app-border text-slate-400" data-i18n="lockedTag">LOCKED</span>
+            </div>
+            <div id="pumpStateText" class="text-[11px] text-slate-400" data-i18n="idleText">Idle</div>
+          </div>
+
+          <button id="pumpTriggerBtn" onclick="triggerManualWater()" class="px-3 py-1.5 rounded-lg bg-app-blue hover:bg-blue-600 text-xs font-semibold text-white transition" data-i18n="pulseBtn">
+            Pulse (3s)
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 4. JAVASCRIPT: ES6 MODULE / FIREBASE v10 INTEGRATION -->
+  <!-- ============================================================ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, update, get, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBvxt3DDEGC6limQSGn_hSCHofi2bjQl9o",
+      authDomain: "the-autopot.firebaseapp.com",
+      databaseURL: "https://the-autopot-default-rtdb.firebaseio.com",
+      projectId: "the-autopot",
+      storageBucket: "the-autopot.firebasestorage.app",
+      messagingSenderId: "250101804599",
+      appId: "1:250101804599:web:bece6c49d1c64b273d99b2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentUser = null;
+    let activeDeviceId = null;
+
+    let currentControls = {
+      mode: 'SUCCULENT',
+      manualMode: false,
+      lightState: false,
+      customMoisture: 45,
+      customLight: 10
+    };
+
+    // ==========================================
+    // MULTILINGUAL DICTIONARY (EN, RU, KY)
+    // ==========================================
+    const translations = {
+      en: {
+        signInPrompt: "Sign in to access your pot telemetry",
+        continueGoogle: "Continue with Google",
+        connectTitle: "Connect Device",
+        connectPrompt: "Enter the identifier from your pot display",
+        connectBtn: "Connect",
+        signOut: "Sign Out",
+        signedInAs: "Signed in as",
+        statsTitle: "Stats",
+        soilMoisture: "Soil Moisture",
+        ambientLight: "Ambient Light",
+        syncLabel: "Sync:",
+        profilesTitle: "Profiles",
+        targetMoisture: "Target Moisture",
+        targetLight: "Target Daily Light",
+        controlsTitle: "Controls",
+        modeLabel: "Mode",
+        autoDesc: "Auto watering active",
+        manualDesc: "Manual controls enabled",
+        autoModeActive: "Auto mode active",
+        manualModeActive: "Manual mode active",
+        growLight: "Grow Light",
+        waterPump: "Water Pump",
+        lockedTag: "LOCKED",
+        toggleBtn: "Toggle",
+        pulseBtn: "Pulse (3s)",
+        pumpingBtn: "Pumping...",
+        idleText: "Idle",
+        pumpingText: "Pumping (3s)",
+        succulent: "Succulent",
+        cactus: "Cactus",
+        tropical: "Tropical",
+        bonsai: "Bonsai",
+        herb: "Herb",
+        rose: "Rose",
+        statusOptimal: "OPTIMAL",
+        statusThirsty: "NEEDS WATER",
+        statusSleeping: "NIGHT IDLE"
+      },
+      ru: {
+        signInPrompt: "Войдите для просмотра данных горшка",
+        continueGoogle: "Войти через Google",
+        connectTitle: "Подключить устройство",
+        connectPrompt: "Введите код с дисплея горшка",
+        connectBtn: "Подключить",
+        signOut: "Выйти",
+        signedInAs: "Владелец:",
+        statsTitle: "Статистика",
+        soilMoisture: "Влажность почвы",
+        ambientLight: "Освещенность",
+        syncLabel: "Связь:",
+        profilesTitle: "Профили",
+        targetMoisture: "Нужная влажность",
+        targetLight: "Световой день",
+        controlsTitle: "Управление",
+        modeLabel: "Режим",
+        autoDesc: "Автополив включен",
+        manualDesc: "Ручной режим активен",
+        autoModeActive: "Работает авто-режим",
+        manualModeActive: "Ручной режим",
+        growLight: "Фитолампа",
+        waterPump: "Насос полива",
+        lockedTag: "БЛОК",
+        toggleBtn: "Переключить",
+        pulseBtn: "Полив (3с)",
+        pumpingBtn: "Полив...",
+        idleText: "Ожидание",
+        pumpingText: "Полив (3с)",
+        succulent: "Суккулент",
+        cactus: "Кактус",
+        tropical: "Тропики",
+        bonsai: "Бонсай",
+        herb: "Травы",
+        rose: "Роза",
+        statusOptimal: "ОПТИМАЛЬНО",
+        statusThirsty: "НУЖЕН ПОЛИВ",
+        statusSleeping: "НОЧНОЙ СОН"
+      },
+      ky: {
+        signInPrompt: "Идиштин көрсөткүчтөрүн көрүү үчүн кириңиз",
+        continueGoogle: "Google аркылуу кирүү",
+        connectTitle: "Түзмөктү туташтыруу",
+        connectPrompt: "Идиштин экранындагы кодду жазыңыз",
+        connectBtn: "Туташтыруу",
+        signOut: "Чыгуу",
+        signedInAs: "Колдонуучу:",
+        statsTitle: "Статистика",
+        soilMoisture: "Топурак нымдуулугу",
+        ambientLight: "Жарыктын деңгээли",
+        syncLabel: "Байланыш:",
+        profilesTitle: "Профилдер",
+        targetMoisture: "Керектүү нымдуулук",
+        targetLight: "Күндүк жарык",
+        controlsTitle: "Башкаруу",
+        modeLabel: "Режим",
+        autoDesc: "Авто сугаруу иштеп жатат",
+        manualDesc: "Кол режими иштеп жатат",
+        autoModeActive: "Авто режим активдүү",
+        manualModeActive: "Кол режими активдүү",
+        growLight: "Фитолампа",
+        waterPump: "Суу насосу",
+        lockedTag: "ЖАБЫК",
+        toggleBtn: "Кошуу",
+        pulseBtn: "Сугаруу (3сек)",
+        pumpingBtn: "Сугарууда...",
+        idleText: "Күтүүдө",
+        pumpingText: "Сугаруу (3сек)",
+        succulent: "Суккулент",
+        cactus: "Кактус",
+        tropical: "Тропик",
+        bonsai: "Бонсай",
+        herb: "Чөптөр",
+        rose: "Роза",
+        statusOptimal: "ОПТИМАЛДУУ",
+        statusThirsty: "СУСАДЫ",
+        statusSleeping: "ТҮНГҮ ТЫНЫГУУ"
+      }
+    };
+
+    let currentLang = localStorage.getItem('autopot_lang') || 'en';
+
+    window.setLanguage = function(lang) {
+      currentLang = lang;
+      localStorage.setItem('autopot_lang', lang);
+
+      // Highlight active button
+      ['en', 'ru', 'ky'].forEach(l => {
+        const btn = document.getElementById(`langBtn-${l}`);
+        if (btn) {
+          if (l === lang) {
+            btn.className = "px-2 py-1 rounded bg-app-blue text-white font-bold transition";
+          } else {
+            btn.className = "px-2 py-1 rounded text-slate-400 hover:text-white transition";
+          }
+        }
+      });
+
+      // Apply texts to DOM
+      const dict = translations[lang] || translations.en;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerText = dict[key];
+        }
+      });
+
+      // Re-trigger live dynamic strings
+      const isManual = !!currentControls.manualMode;
+      document.getElementById('modeDescription').innerText = isManual ? dict.manualDesc : dict.autoDesc;
+      document.getElementById('modeStatusText').innerText = isManual ? dict.manualModeActive : dict.autoModeActive;
+    };
+
+    // ==========================================
+    // CLOCK & DATE TICKER
+    // ==========================================
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const clockEl = document.getElementById('liveClock');
+      if (clockEl) clockEl.innerText = `${hours}:${minutes}`;
+
+      const options = { weekday: 'short', month: 'short', day: 'numeric' };
+      const dateEl = document.getElementById('liveDate');
+      if (dateEl) dateEl.innerText = now.toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : currentLang === 'ky' ? 'ky-KG' : 'en-US', options);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ==========================================
+    // SCREEN NAVIGATION ROUTER
+    // ==========================================
+    function setScreen(screenName) {
+      document.getElementById('authSection').classList.add('hidden');
+      document.getElementById('pairSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.add('hidden');
+
+      if (screenName === 'auth') document.getElementById('authSection').classList.remove('hidden');
+      if (screenName === 'pair') document.getElementById('pairSection').classList.remove('hidden');
+      if (screenName === 'dashboard') document.getElementById('dashboardSection').classList.remove('hidden');
+    }
+
+    // ==========================================
+    // SESSION PERSISTENCE & AUTH LIFECYCLE
+    // ==========================================
+    const savedPot = localStorage.getItem('autopot_saved_device');
+    const savedName = localStorage.getItem('autopot_saved_name');
+    const savedAvatar = localStorage.getItem('autopot_saved_avatar');
+
+    // Immediate session bypass on reload
+    if (savedPot) {
+      activeDeviceId = savedPot;
+      if (savedName) document.getElementById('userName').innerText = savedName;
+      if (savedAvatar) document.getElementById('userAvatar').src = savedAvatar;
+      document.getElementById('activePotBadge').innerText = savedPot;
+      loadDashboardEngine();
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const firstName = user.displayName ? user.displayName.split(' ')[0] : 'User';
+        document.getElementById('userName').innerText = firstName;
+        localStorage.setItem('autopot_saved_name', firstName);
+
+        if (user.photoURL) {
+          document.getElementById('userAvatar').src = user.photoURL;
+          localStorage.setItem('autopot_saved_avatar', user.photoURL);
+        }
+
+        if (!activeDeviceId) {
+          const userDeviceSnap = await get(ref(db, `users/${user.uid}/activeDevice`));
+          if (userDeviceSnap.exists()) {
+            activeDeviceId = userDeviceSnap.val();
+          } else {
+            activeDeviceId = "POT-001";
+          }
+          localStorage.setItem('autopot_saved_device', activeDeviceId);
+          loadDashboardEngine();
+        }
+      } else if (!localStorage.getItem('autopot_saved_device')) {
+        currentUser = null;
+        activeDeviceId = null;
+        setScreen('auth');
+      }
+    });
+
+    // ==========================================
+    // REALTIME DASHBOARD ENGINE
+    // ==========================================
+    function loadDashboardEngine() {
+      if (!activeDeviceId) return;
+
+      document.getElementById('activePotBadge').innerText = activeDeviceId;
+      const potPath = `devices/${activeDeviceId}`;
+
+      // 1. Telemetry Listener
+      onValue(ref(db, `${potPath}/telemetry`), (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const moisture = data.moisture !== undefined ? data.moisture : 0;
+        const light = data.light !== undefined ? data.light : 0;
+
+        document.getElementById('channelMoistVal').innerText = moisture;
+        document.getElementById('channelLightVal').innerText = light;
+
+        // Update progress bars
+        document.getElementById('channelMoistBar').style.width = Math.min(Math.max(moisture, 0), 100) + '%';
+        document.getElementById('channelLightBar').style.width = Math.min((Math.max(light, 0) / 1000) * 100, 100) + '%';
+
+        // Update status badge
+        const badge = document.getElementById('telemetryStatusBadge');
+        const dict = translations[currentLang] || translations.en;
+        if (data.status === 'HAPPY') {
+          badge.innerText = dict.statusOptimal;
+          badge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-app-inner border border-app-border text-app-teal';
+        } else if (data.status === 'THIRSTY') {
+          badge.innerText = dict.statusThirsty;
+          badge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-app-inner border border-app-border text-app-yellow';
+        } else if (data.status === 'SLEEPING') {
+          badge.innerText = dict.statusSleeping;
+          badge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-app-inner border border-app-border text-slate-400';
+        } else {
+          badge.innerText = (data.status || 'NORMAL').toUpperCase();
+          badge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-app-inner border border-app-border text-slate-300';
+        }
+      });
+
+      // 2. Controls Listener
+      onValue(ref(db, `${potPath}/controls`), (snapshot) => {
+        const controls = snapshot.val();
+        if (!controls) return;
+        currentControls = Object.assign(currentControls, controls);
+
+        const dict = translations[currentLang] || translations.en;
+
+        // Mode label & presets
+        const mode = controls.mode || 'CUSTOM';
+        document.getElementById('activePresetBadge').innerText = mode;
+
+        ['SUCCULENT', 'CACTUS', 'TROPICAL', 'BONSAI', 'HERB', 'ROSE'].forEach(p => {
+          const pill = document.getElementById(`pill-${p}`);
+          if (pill) {
+            if (p === mode) {
+              pill.className = 'p-2 rounded-lg bg-app-blue text-white text-xs font-medium transition text-center';
+            } else {
+              pill.className = 'p-2 rounded-lg bg-app-inner hover:bg-app-hover border border-app-border text-slate-300 text-xs font-medium transition text-center';
+            }
+          }
+        });
+
+        // Mode: Auto vs Manual Lock Management
+        const isManual = !!controls.manualMode;
+        document.getElementById('manualModeToggle').checked = isManual;
+        
+        const autoIndicator = document.getElementById('autoIndicator');
+        const modeDesc = document.getElementById('modeDescription');
+        const modeStatusText = document.getElementById('modeStatusText');
+        const lightBox = document.getElementById('lightControlBox');
+        const pumpBox = document.getElementById('pumpControlBox');
+        const lightLockTag = document.getElementById('lightLockTag');
+        const pumpLockTag = document.getElementById('pumpLockTag');
+
+        if (isManual) {
+          autoIndicator.innerText = 'MANUAL';
+          autoIndicator.className = 'text-[11px] font-mono text-app-yellow font-bold';
+          modeDesc.innerText = dict.manualDesc;
+          modeStatusText.innerText = dict.manualModeActive;
+
+          // Unlock Manual Controls
+          lightBox.classList.remove('opacity-35', 'pointer-events-none');
+          pumpBox.classList.remove('opacity-35', 'pointer-events-none');
+          lightLockTag.classList.add('hidden');
+          pumpLockTag.classList.add('hidden');
+        } else {
+          autoIndicator.innerText = 'AUTO';
+          autoIndicator.className = 'text-[11px] font-mono text-app-blue font-bold';
+          modeDesc.innerText = dict.autoDesc;
+          modeStatusText.innerText = dict.autoModeActive;
+
+          // Strictly Lock Manual Controls
+          lightBox.classList.add('opacity-35', 'pointer-events-none');
+          pumpBox.classList.add('opacity-35', 'pointer-events-none');
+          lightLockTag.classList.remove('hidden');
+          pumpLockTag.classList.remove('hidden');
+        }
+
+        // Grow Light status
+        const lightState = !!controls.lightState;
+        const lightStateText = document.getElementById('lightStateText');
+        const growLightBtn = document.getElementById('growLightBtn');
+        if (lightState) {
+          lightStateText.innerText = 'ON';
+          lightStateText.className = 'text-[11px] font-mono text-app-yellow font-bold';
+          growLightBtn.className = 'px-3 py-1.5 rounded-lg bg-app-yellow text-black text-xs font-semibold transition';
+        } else {
+          lightStateText.innerText = 'OFF';
+          lightStateText.className = 'text-[11px] font-mono text-slate-400';
+          growLightBtn.className = 'px-3 py-1.5 rounded-lg bg-app-inner border border-app-border text-xs font-semibold text-slate-300 hover:text-white transition';
+        }
+
+        // Sliders & Targets
+        const targetM = controls.customMoisture !== undefined ? controls.customMoisture : 45;
+        const targetL = controls.customLight !== undefined ? controls.customLight : 10;
+        document.getElementById('customMoistSlider').value = targetM;
+        document.getElementById('sliderMoistValDisplay').innerText = `${targetM}%`;
+        document.getElementById('customLightSlider').value = targetL;
+        document.getElementById('sliderLightValDisplay').innerText = `${targetL} hrs`;
+
+        document.getElementById('targetMoistTag').innerText = `Target: ${targetM}%`;
+        document.getElementById('targetLightTag').innerText = `Target: ${targetL}h`;
+      });
+
+      window.setLanguage(currentLang);
+      setScreen('dashboard');
+    }
+
+    // ==========================================
+    // HARDWARE WRITES & IOT COMMITS
+    // ==========================================
+    window.toggleManualMode = function(isChecked) {
+      if (!activeDeviceId) return;
+      update(ref(db, `devices/${activeDeviceId}/controls`), {
+        manualMode: isChecked
+      });
+    };
+
+    window.toggleGrowLight = function() {
+      if (!activeDeviceId || !currentControls.manualMode) return;
+      const nextState = !currentControls.lightState;
+      update(ref(db, `devices/${activeDeviceId}/controls`), {
+        lightState: nextState
+      });
+    };
+
+    window.triggerManualWater = function() {
+      if (!activeDeviceId || !currentControls.manualMode) return;
+      const dict = translations[currentLang] || translations.en;
+      const btn = document.getElementById('pumpTriggerBtn');
+      const stateText = document.getElementById('pumpStateText');
+
+      btn.disabled = true;
+      btn.innerText = dict.pumpingBtn;
+      stateText.innerText = dict.pumpingText;
+      stateText.className = 'text-[11px] text-app-blue font-bold';
+
+      update(ref(db, `devices/${activeDeviceId}/controls`), {
+        triggerPump: true
+      });
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerText = dict.pulseBtn;
+        stateText.innerText = dict.idleText;
+        stateText.className = 'text-[11px] text-slate-400';
+      }, 3000);
+    };
+
+    window.setSpeciesPreset = function(modeName, moistVal, lightVal) {
+      if (!activeDeviceId) return;
+      update(ref(db, `devices/${activeDeviceId}/controls`), {
+        mode: modeName,
+        customMoisture: moistVal,
+        customLight: lightVal
+      });
+    };
+
+    // Staged Slider Handling: input updates local display, change commits to database
+    window.onMoistSliderMove = function(val) {
+      document.getElementById('sliderMoistValDisplay').innerText = `${val}%`;
+      document.getElementById('targetMoistTag').innerText = `Target: ${val}%`;
+    };
+
+    window.commitMoistSlider = function(val) {
+      if (!activeDeviceId) return;
+      update(ref(db, `devices/${activeDeviceId}/controls`), {
+        mode: 'CUSTOM',
+        customMoisture: parseInt(val, 10)
+      });
+    };
+
+    window.onLightSliderMove = function(val) {
+      document.getElementById('sliderLightValDisplay').innerText = `${val} hrs`;
+      document.getElementById('targetLightTag').innerText = `Target: ${val}h`;
+    };
+
+    window.commitLightSlider = function(val) {
+      if (!activeDeviceId) return;
+      update(ref(db, `devices/${activeDeviceId}/controls`), {
+        mode: 'CUSTOM',
+        customLight: parseInt(val, 10)
+      });
+    };
+
+    // ==========================================
+    // PAIRING LOGIC
+    // ==========================================
+    window.pairDevice = async function() {
+      const code = document.getElementById('pairingInput').value.trim().toUpperCase();
+      if (!code) {
+        alert("Please input a valid device identifier.");
+        return;
+      }
+
+      const pairBtn = document.getElementById('pairBtn');
+      pairBtn.innerText = "Checking...";
+      pairBtn.disabled = true;
+
+      const deviceRef = ref(db, `devices/${code}`);
+      const snap = await get(deviceRef);
+
+      if (!snap.exists()) {
+        alert(`Registry check failed. "${code}" is not registered.`);
+        pairBtn.innerText = translations[currentLang].connectBtn;
+        pairBtn.disabled = false;
+        return;
+      }
+
+      const deviceData = snap.val();
+      if (currentUser) {
+        if (deviceData.owner && deviceData.owner !== currentUser.uid) {
+          alert(`AutoPot unit ${code} is already paired to another user.`);
+          pairBtn.innerText = translations[currentLang].connectBtn;
+          pairBtn.disabled = false;
+          return;
+        }
+
+        await update(deviceRef, {
+          owner: currentUser.uid,
+          claimed: true
+        });
+
+        await set(ref(db, `users/${currentUser.uid}/activeDevice`), code);
+      }
+
+      localStorage.setItem('autopot_saved_device', code);
+      activeDeviceId = code;
+      pairBtn.innerText = translations[currentLang].connectBtn;
+      pairBtn.disabled = false;
+
+      loadDashboardEngine();
+    };
+
+    window.promptPairing = function() {
+      setScreen('pair');
+    };
+
+    // ==========================================
+    // AUTH ACTIONS
+    // ==========================================
+    window.loginWithGoogle = function() {
+      signInWithPopup(auth, provider).catch((err) => {
+        alert("Sign-in failed: " + err.message);
+      });
+    };
+
+    window.logoutUser = function() {
+      localStorage.removeItem('autopot_saved_device');
+      localStorage.removeItem('autopot_saved_name');
+      localStorage.removeItem('autopot_saved_avatar');
+      activeDeviceId = null;
+      currentUser = null;
+      signOut(auth).then(() => {
+        setScreen('auth');
+      });
+    };
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
